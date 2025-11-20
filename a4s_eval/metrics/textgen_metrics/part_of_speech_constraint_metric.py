@@ -3,19 +3,25 @@ The implementation of the metric for the part of speech constraint in a
 textattack library.
 """
 from datetime import datetime
+from typing import Any
 
 import stanza
 from datasets import load_dataset
+from pydantic import UUID1, UUID3
+from pyexpat import features
 from textattack import Attack
 from textattack.search_methods import SearchMethod
 from textattack.shared.validators import goal_function
 from textattack.transformations import Transformation
 
-from a4s_eval.data_model.evaluation import DataShape, Dataset, Model
+from a4s_eval.data_model.evaluation import DataShape, Dataset, Feature, FeatureType, Model
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.textgen_metric_registry import TextgenMetric
-from a4s_eval.service.functional_model import TextGenerationModel
+from a4s_eval.service.functional_model import GenerateTextFn, TextGenerationModel
 from collections import defaultdict
+
+from a4s_eval.typing import TextInput, TextOutput
+from tests.metrics.data_metrics.test_execute import data_shape
 
 
 class PartOfSpeechConstraintMetric(TextgenMetric):
@@ -47,7 +53,6 @@ class PartOfSpeechConstraintMetric(TextgenMetric):
             tagged_data.append(tagged)
 
         self.evaluate_pos_tags(tagged_data)
-
 
         items = []
         measure = Measure(name="part_of_speech_constraint_metric",
@@ -92,3 +97,24 @@ class PartOfSpeechTransformation(Transformation):
 
     def perform_goal_function(self, result):
         pass
+
+class IMDBTextModel(GenerateTextFn):
+    def __call__(self, text_input: TextInput, **kwargs: Any) -> TextOutput: ...
+
+
+
+"""
+part_of_speech_constraint_metric = PartOfSpeechConstraintMetric()
+imdb_dataset = load_dataset("imdb")
+train_data = imdb_dataset["train"]
+
+imdb_text_model = IMDBTextModel()
+text_generation_model = TextGenerationModel(imdb_text_model)
+model = Model(model=None, pid=UUID1, dataset=imdb_dataset)
+feature_text = Feature(pid=UUID1, feature_type=FeatureType.TEXT, name="text", max_value=None, min_value=None)
+feature_label = Feature(pid=UUID3, feature_type=FeatureType.INTEGER, name="label", max_value=1, min_value=0)
+features_of_imdb = [feature_text, feature_label]
+datashape = DataShape(features=features_of_imdb)
+
+part_of_speech_constraint_metric.__call__(datashape, model, train_data, text_generation_model)
+"""
