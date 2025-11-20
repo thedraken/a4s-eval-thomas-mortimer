@@ -3,28 +3,25 @@ The implementation of the metric for the part of speech constraint in a
 textattack library.
 """
 from datetime import datetime
-from typing import Any
+from typing import List
 
 import stanza
-from datasets import load_dataset
-from pydantic import UUID1, UUID3
-from pyexpat import features
-from textattack import Attack
-from textattack.search_methods import SearchMethod
-from textattack.shared.validators import goal_function
-from textattack.transformations import Transformation
 
-from a4s_eval.data_model.evaluation import DataShape, Dataset, Feature, FeatureType, Model
+from a4s_eval.data_model.evaluation import DataShape, Dataset, Model
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.textgen_metric_registry import TextgenMetric
-from a4s_eval.service.functional_model import GenerateTextFn, TextGenerationModel
-from collections import defaultdict
-
-from a4s_eval.typing import TextInput, TextOutput
-from tests.metrics.data_metrics.test_execute import data_shape
+from a4s_eval.service.functional_model import TextGenerationModel
 
 
 class PartOfSpeechConstraintMetric(TextgenMetric):
+    """
+    Involves taking the original text and using a POS tagger,
+    for example Stanford POS Tagger. We need to identify each word and
+    check any changes to the word still match the tag of the original
+    word. If the drift is too large, we will reject it as being an
+    attack. Examples this would check to make sure nouns are replaced
+    with nouns, and not an adjective.
+    """
     def __call__(
             self,
             datashape: DataShape,
@@ -35,14 +32,6 @@ class PartOfSpeechConstraintMetric(TextgenMetric):
         print("Measure the metric here....")
         stanza.download('en')
 
-
-
-        # Involves taking the original text and using a POS tagger,
-        # for example Stanford POS Tagger. We need to identify each word and
-        # check any changes to the word still match the tag of the original
-        # word. If the drift is too large, we will reject it as being an
-        # attack. Examples this would check to make sure nouns are replaced
-        # with nouns, and not an adjective.
 
         self._nlp = stanza.Pipeline('en', processors='tokenize,pos')
 
@@ -58,63 +47,65 @@ class PartOfSpeechConstraintMetric(TextgenMetric):
         measure = Measure(name="part_of_speech_constraint_metric",
                           score=0.0, time=datetime.now())
         items.append(measure)
-        my_search_method = PartOfSpeechSearchMethod()
-        my_transformation = PartOfSpeechTransformation()
-        my_attack = Attack(goal_function=goal_function,
-                           transformation=my_transformation,
-                           constraints=[],
-                           search_method=my_search_method)
+
+        """
+        Measure the POS constraint metric for the dataset.
+        """
+        items = []
+        total_score = 0.0
+        num_samples = 0
+
+        for i, (original_text, label) in enumerate(dataset):
+            # Tag the original text
+            original_tags = self.pos_tag_text(original_text)
+
+            # Simulate a perturbed text
+            # TODO implement attack logic
+            perturbed_text = original_text
+            perturbed_tags = self.pos_tag_text(perturbed_text)
+
+            # Calculate the POS tag match score
+            score = self.evaluate_pos_tags(original_tags, perturbed_tags)
+            total_score += score
+            num_samples += 1
+
+            # Create a measure for this sample
+            measure = Measure(
+                name="part_of_speech_constraint_metric",
+                score=score,
+                time=datetime.now(),
+            )
+            items.append(measure)
+
+        # Calculate the average score
+        avg_score = total_score / num_samples if num_samples > 0 else 0.0
+
+        # Create a summary measure
+        summary_measure = Measure(
+            name="part_of_speech_constraint_metric_avg",
+            score=avg_score,
+            time=datetime.now(),
+        )
+        items.append(summary_measure)
+
         return items
 
-    def pos_tag_text(self, text):
+    def pos_tag_text(self, text: str) -> List[tuple]:
+        """Tag a text with POS tags using stanza."""
         doc = self._nlp(text)
         return [(word.text, word.upos) for sent in doc.sentences for word in sent.words]
 
-    def evaluate_pos_tags(self, tagged_reviews):
-        tag_counts = defaultdict(int)
-        total_tags = 0
+    def evaluate_pos_tags(self, original_tags: List[tuple], perturbed_tags: List[tuple]) -> float:
+        """
+        Evaluate the POS tag drift between original and perturbed text.
+        Returns a score between 0 and 1, where 1 means no drift.
+        """
+        if len(original_tags) != len(perturbed_tags):
+            return 0.0
 
-        for review_tags in tagged_reviews:
-            for word, tag in review_tags:
-                tag_counts[tag] += 1
-                total_tags += 1
+        matches = 0
+        for (orig_word, orig_tag), (pert_word, pert_tag) in zip(original_tags, perturbed_tags):
+            if orig_tag == pert_tag:
+                matches += 1
 
-        # Print tag distribution
-        for tag, count in tag_counts.items():
-            print(f"{tag}: {count} ({count / total_tags:.2%})")
-
-class PartOfSpeechSearchMethod(SearchMethod):
-    def perform_search(self, initial_result):
-        pass
-
-
-class PartOfSpeechTransformation(Transformation):
-    def _get_transformations(self, current_text, indices_to_modify):
-        pass
-
-    def perform_transformation(self, result):
-        pass
-
-    def perform_goal_function(self, result):
-        pass
-
-class IMDBTextModel(GenerateTextFn):
-    def __call__(self, text_input: TextInput, **kwargs: Any) -> TextOutput: ...
-
-
-
-"""
-part_of_speech_constraint_metric = PartOfSpeechConstraintMetric()
-imdb_dataset = load_dataset("imdb")
-train_data = imdb_dataset["train"]
-
-imdb_text_model = IMDBTextModel()
-text_generation_model = TextGenerationModel(imdb_text_model)
-model = Model(model=None, pid=UUID1, dataset=imdb_dataset)
-feature_text = Feature(pid=UUID1, feature_type=FeatureType.TEXT, name="text", max_value=None, min_value=None)
-feature_label = Feature(pid=UUID3, feature_type=FeatureType.INTEGER, name="label", max_value=1, min_value=0)
-features_of_imdb = [feature_text, feature_label]
-datashape = DataShape(features=features_of_imdb)
-
-part_of_speech_constraint_metric.__call__(datashape, model, train_data, text_generation_model)
-"""
+        return matches / len(original_tags)
