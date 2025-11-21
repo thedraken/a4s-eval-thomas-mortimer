@@ -11,6 +11,7 @@ from a4s_eval.data_model.evaluation import DataShape, Dataset, Model
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.textgen_metric_registry import TextgenMetric
 from a4s_eval.service.functional_model import TextGenerationModel
+from a4s_eval.utils.logging import get_logger
 
 
 class PartOfSpeechConstraintMetric(TextgenMetric):
@@ -108,4 +109,9 @@ class PartOfSpeechConstraintMetric(TextgenMetric):
             if orig_tag == pert_tag:
                 matches += 1
 
-        return matches / len(original_tags)
+        length_of_original_tags = len(original_tags)
+        if length_of_original_tags != 0:
+            return matches / length_of_original_tags
+        logger = get_logger()
+        logger.warning("No original tags found, returning 0.0")
+        return 0.0
