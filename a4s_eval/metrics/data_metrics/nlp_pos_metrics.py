@@ -10,25 +10,17 @@ nlp = stanza.Pipeline('en', processors='tokenize,pos', tokenize_no_ssplit=True)
 @data_metric(name="Noun/Adjective Transformation Accuracy")
 def noun_adj_transformation_accuracy(datashape, reference, evaluated):
     """
-    Computes how well a transformed dataset preserved or correctly
-    altered nouns and adjectives.
+    Args:
+        datashape: Metadata about the dataset shape
+        reference: Original dataset
+        evaluated: Transformed dataset
 
-    Parameters
-    ----------
-    datashape : DataShape
-    reference : Dataset      (original dataset)
-    evaluated : Dataset      (transformed dataset)
+    Returns: A list of measures, that includes the accuracy of the nouns, adjectives and the overall stability
 
-    Returns
-    -------
-    List[Measure]:
-        noun_accuracy
-        adj_accuracy
-        overall_accuracy
     """
     ref_texts = getattr(reference, "X", None)
     if ref_texts is None and hasattr(reference, "df"):
-        ref_texts = reference.df["text"].tolist()  # or the correct column
+        ref_texts = reference.df["text"].tolist()
 
     eval_texts = getattr(evaluated, "X", None)
     if eval_texts is None and hasattr(evaluated, "df"):
@@ -51,7 +43,6 @@ def noun_adj_transformation_accuracy(datashape, reference, evaluated):
         orig_doc = nlp(orig_text)
         trans_doc = nlp(trans_text)
 
-        # Flatten tokens
         orig_pos = [w.xpos for sent in orig_doc.sentences for w in sent.words]
         trans_pos = [w.xpos for sent in trans_doc.sentences for w in sent.words]
 
@@ -71,7 +62,6 @@ def noun_adj_transformation_accuracy(datashape, reference, evaluated):
             # Overall POS category stability
             overall_correct.append(int((p1[0] == p2[0])))
 
-    # Safe means when lists empty
     noun_acc = float(np.mean(noun_correct)) if noun_correct else 0.0
     adj_acc = float(np.mean(adj_correct)) if adj_correct else 0.0
     overall_acc = float(np.mean(overall_correct)) if overall_correct else 0.0
