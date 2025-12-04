@@ -67,7 +67,7 @@ def evaluated_dataset_empty():
 # Tests using fixtures
 # ---------------------------------------------------------------------
 
-@patch("a4s_eval.metrics.data_metrics.noun_adj_transformation_accuracy.nlp")
+@patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_basic_accuracy(mock_nlp, reference_dataset_basic, evaluated_dataset_basic):
     mock_nlp.side_effect = [
         make_fake_stanza_doc(["NN", "JJ"]),
@@ -86,7 +86,7 @@ def test_basic_accuracy(mock_nlp, reference_dataset_basic, evaluated_dataset_bas
     assert results[1].score == 1.0  # adjective_accuracy
 
 
-@patch("a4s_eval.metrics.data_metrics.noun_adj_transformation_accuracy.nlp")
+@patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_mixed_accuracy(mock_nlp, reference_dataset_basic, evaluated_dataset_mixed):
     mock_nlp.side_effect = [
         make_fake_stanza_doc(["NN", "JJ"]),  # original
@@ -99,7 +99,7 @@ def test_mixed_accuracy(mock_nlp, reference_dataset_basic, evaluated_dataset_mix
     assert results[1].score == 0.0
 
 
-@patch("a4s_eval.metrics.data_metrics.noun_adj_transformation_accuracy.nlp")
+@patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_length_mismatch(mock_nlp, reference_dataset_basic, evaluated_dataset_length_mismatch):
     mock_nlp.side_effect = [
         make_fake_stanza_doc(["NN", "JJ", "NN"]),
@@ -112,7 +112,7 @@ def test_length_mismatch(mock_nlp, reference_dataset_basic, evaluated_dataset_le
     assert results[1].score == 1.0
 
 
-@patch("a4s_eval.metrics.data_metrics.noun_adj_transformation_accuracy.nlp")
+@patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_empty_text(mock_nlp, reference_dataset_basic, evaluated_dataset_empty):
     mock_nlp.side_effect = [
         make_fake_stanza_doc([]),

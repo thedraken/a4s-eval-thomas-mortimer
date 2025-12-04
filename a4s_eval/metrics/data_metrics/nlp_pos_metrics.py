@@ -26,18 +26,27 @@ def noun_adj_transformation_accuracy(datashape, reference, evaluated):
         adj_accuracy
         overall_accuracy
     """
+    ref_texts = getattr(reference, "X", None)
+    if ref_texts is None and hasattr(reference, "df"):
+        ref_texts = reference.df["text"].tolist()  # or the correct column
 
-    if not hasattr(reference, "X") or not hasattr(evaluated, "X"):
-        raise ValueError("Both reference and evaluated datasets must contain field X")
+    eval_texts = getattr(evaluated, "X", None)
+    if eval_texts is None and hasattr(evaluated, "df"):
+        eval_texts = evaluated.df["text"].tolist()
 
-    if len(reference.X) != len(evaluated.X):
-        raise ValueError("Reference and evaluated datasets must have same sample count")
+    if ref_texts is None or eval_texts is None:
+        raise ValueError(
+            "Both reference and evaluated datasets must contain text data (X or df['text'])")
+
+    if len(ref_texts) != len(eval_texts):
+        raise ValueError(
+            "Reference and evaluated datasets must have the same number of samples")
 
     noun_correct = []
     adj_correct = []
     overall_correct = []
 
-    for orig_text, trans_text in zip(reference.X, evaluated.X):
+    for orig_text, trans_text in zip(ref_texts, eval_texts):
 
         orig_doc = nlp(orig_text)
         trans_doc = nlp(trans_text)
