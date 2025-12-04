@@ -27,6 +27,7 @@ dependencies = [
     "textattack",
     "tensorflow-datasets",
     "stanza",
+    "sentence_transformers==5.1.2"
 ]
 
 [dependency-groups]
