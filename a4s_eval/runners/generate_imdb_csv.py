@@ -8,7 +8,6 @@ stanza.download("en")
 nlp = stanza.Pipeline("en", processors="tokenize,pos")
 
 
-
 def transform_text(text: str):
     """
     Transforms the input text by analysing its grammatical structure and
@@ -33,6 +32,7 @@ def transform_text(text: str):
                 out.append(word.text)
 
     return " ".join(out)
+
 
 def generate_csv(limit, output):
     """
@@ -60,11 +60,9 @@ def generate_csv(limit, output):
         transformed = transform_text(original)
         label = sample["label"]
 
-        rows.append({
-            "text_original": original,
-            "text_transformed": transformed,
-            "label": label
-        })
+        rows.append(
+            {"text_original": original, "text_transformed": transformed, "label": label}
+        )
 
     df = pd.DataFrame(rows)
     df.to_csv(output, index=False)
@@ -82,10 +80,12 @@ def main():
             The output CSV filename. Defaults to "imdb_transformed.csv".
     """
     parser = argparse.ArgumentParser(description="Generate transformed IMDB CSV")
-    parser.add_argument("--limit", type=int, default=500,
-                        help="Number of IMDB samples to convert")
-    parser.add_argument("--output", type=str, default="imdb_transformed.csv",
-                        help="Output CSV filename")
+    parser.add_argument(
+        "--limit", type=int, default=500, help="Number of IMDB samples to convert"
+    )
+    parser.add_argument(
+        "--output", type=str, default="imdb_transformed.csv", help="Output CSV filename"
+    )
 
     args = parser.parse_args()
     generate_csv(args.limit, args.output)

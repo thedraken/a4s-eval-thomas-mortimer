@@ -3,8 +3,18 @@ import uuid
 import pandas as pd
 import pytest
 
-from a4s_eval.data_model.evaluation import (DataShape, Dataset, Model, ModelConfig, ModelFramework, ModelTask)
-from a4s_eval.metric_registries.model_metric_registry import ModelMetric, model_metric_registry
+from a4s_eval.data_model.evaluation import (
+    DataShape,
+    Dataset,
+    Model,
+    ModelConfig,
+    ModelFramework,
+    ModelTask,
+)
+from a4s_eval.metric_registries.model_metric_registry import (
+    ModelMetric,
+    model_metric_registry,
+)
 from a4s_eval.service.functional_model import TabularClassificationModel
 from a4s_eval.service.model_factory import load_model
 from tests.save_measures_utils import save_measures

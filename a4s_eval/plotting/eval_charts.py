@@ -38,7 +38,9 @@ def plot_transformation_accuracy(scores: dict, out_dir: str | Path):
     return out_path
 
 
-def plot_robustness_consistency(robustness: float, consistency: float, out_dir: str | Path):
+def plot_robustness_consistency(
+        robustness: float, consistency: float, out_dir: str | Path
+):
     """
     Generates a bar plot for robustness and consistency scores, saves it as an image
     in the specified directory, and returns the file path.

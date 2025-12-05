@@ -7,7 +7,7 @@ from a4s_eval.data_model.evaluation import DataShape, Dataset, FeatureType
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.data_metric_registry import data_metric
 
-nlp = stanza.Pipeline('en', processors='tokenize,pos', tokenize_no_ssplit=True)
+nlp = stanza.Pipeline("en", processors="tokenize,pos", tokenize_no_ssplit=True)
 
 
 def _compute_pos_measures(ref_texts: list[str], eval_texts: list[str]) -> list[Measure]:
@@ -118,22 +118,35 @@ def noun_adj_transformation_accuracy(
         raise ValueError("Both reference and evaluated datasets must contain data")
 
     # Columns from the DataShape
-    ref_col = next((f.name for f in datashape.features
-                    if f.feature_type == FeatureType.TEXT and f.name in reference.data.columns and "original" in f.name),
-                   None)
-    eval_col = next((f.name for f in datashape.features
-                     if f.feature_type == FeatureType.TEXT and f.name in evaluated.data.columns and "transformed" in f.name),
-                    None)
+    ref_col = next(
+        (
+            f.name
+            for f in datashape.features
+            if f.feature_type == FeatureType.TEXT
+               and f.name in reference.data.columns
+               and "original" in f.name
+        ),
+        None,
+    )
+    eval_col = next(
+        (
+            f.name
+            for f in datashape.features
+            if f.feature_type == FeatureType.TEXT
+               and f.name in evaluated.data.columns
+               and "transformed" in f.name
+        ),
+        None,
+    )
 
     if ref_col is None or eval_col is None:
         # Not a text-transformation dataset -> return neutral measures
         return [
-            Measure(name="noun_accuracy", score=0.0,
-                    time=datetime.datetime.now()),
-            Measure(name="adjective_accuracy", score=0.0,
-                    time=datetime.datetime.now()),
-            Measure(name="overall_pos_stability", score=0.0,
-                    time=datetime.datetime.now()),
+            Measure(name="noun_accuracy", score=0.0, time=datetime.datetime.now()),
+            Measure(name="adjective_accuracy", score=0.0, time=datetime.datetime.now()),
+            Measure(
+                name="overall_pos_stability", score=0.0, time=datetime.datetime.now()
+            ),
         ]
 
     ref_texts = reference.data[ref_col].tolist()
@@ -157,7 +170,6 @@ def noun_adj_transformation_accuracy(
         eval_doc = nlp(eval_t)
 
         for ref_sent, eval_sent in zip(ref_doc.sentences, eval_doc.sentences):
-
             ref_pos = [w.pos for w in ref_sent.words]
             eval_pos = [w.pos for w in eval_sent.words]
 

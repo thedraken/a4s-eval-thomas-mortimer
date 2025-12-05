@@ -3,12 +3,14 @@ import uuid
 import numpy as np
 import pandas as pd
 
-from a4s_eval.data_model.evaluation import Dataset, DataShape, Feature, \
-    FeatureType
-from a4s_eval.metrics.data_metrics.nlp_pos_metrics import \
-    noun_adj_transformation_accuracy
-from a4s_eval.metrics.prediction_metrics.nlp_llm_robustness_metrics import \
-    llm_answer_consistency, llm_performance_drop
+from a4s_eval.data_model.evaluation import DataShape, Dataset, Feature, FeatureType
+from a4s_eval.metrics.data_metrics.nlp_pos_metrics import (
+    noun_adj_transformation_accuracy,
+)
+from a4s_eval.metrics.prediction_metrics.nlp_llm_robustness_metrics import (
+    llm_answer_consistency,
+    llm_performance_drop,
+)
 
 
 class NLPTransformationEvaluator:
@@ -31,13 +33,27 @@ class NLPTransformationEvaluator:
             max_v = max(values)
         else:
             min_v, max_v = None, None
-        return Feature(pid=uuid.uuid4(), name=name, feature_type=ftype, min_value=min_v, max_value=max_v)
+        return Feature(
+            pid=uuid.uuid4(),
+            name=name,
+            feature_type=ftype,
+            min_value=min_v,
+            max_value=max_v,
+        )
 
     def build_datashape(self, df: pd.DataFrame) -> DataShape:
-        feat_original = self.build_feature("text_original", df["text_original"].tolist(), FeatureType.TEXT)
-        feat_transformed = self.build_feature("text_transformed", df["text_transformed"].tolist(), FeatureType.TEXT)
-        feat_label = self.build_feature("label", df["label"].tolist(), FeatureType.CATEGORICAL)
-        return DataShape(features=[feat_original, feat_transformed], target=feat_label, date=None)
+        feat_original = self.build_feature(
+            "text_original", df["text_original"].tolist(), FeatureType.TEXT
+        )
+        feat_transformed = self.build_feature(
+            "text_transformed", df["text_transformed"].tolist(), FeatureType.TEXT
+        )
+        feat_label = self.build_feature(
+            "label", df["label"].tolist(), FeatureType.CATEGORICAL
+        )
+        return DataShape(
+            features=[feat_original, feat_transformed], target=feat_label, date=None
+        )
 
     def prepare_dataset(self, df: pd.DataFrame) -> Dataset:
         datashape = self.build_datashape(df)
@@ -59,7 +75,7 @@ class NLPTransformationEvaluator:
             datashape=dataset.shape,
             model=self.model,
             dataset=dataset,
-            y_pred_proba=y_pred
+            y_pred_proba=y_pred,
         )
 
         print("Running performance check...")
@@ -67,19 +83,17 @@ class NLPTransformationEvaluator:
             datashape=dataset.shape,
             model=self.model,
             dataset=dataset,
-            y_pred_proba=y_pred
+            y_pred_proba=y_pred,
         )
 
         print("Running accuracy check...")
         pos_accuracy = noun_adj_transformation_accuracy(
-            datashape=dataset.shape,
-            reference=dataset,
-            evaluated=dataset
+            datashape=dataset.shape, reference=dataset, evaluated=dataset
         )
 
         print("Evaluation complete.")
         return {
             "consistency": consistency,
             "performance_drop": performance,
-            "pos_accuracy": pos_accuracy
+            "pos_accuracy": pos_accuracy,
         }

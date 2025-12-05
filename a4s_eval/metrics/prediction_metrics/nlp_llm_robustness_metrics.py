@@ -5,11 +5,11 @@ from sentence_transformers import SentenceTransformer
 
 from a4s_eval.data_model.evaluation import DataShape, Dataset, Model
 from a4s_eval.data_model.measure import Measure
-from a4s_eval.metric_registries.prediction_metric_registry import \
-    prediction_metric
+from a4s_eval.metric_registries.prediction_metric_registry import prediction_metric
 
 # Sentence transformer model, takes sentences and slightly changes them
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 def _cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
     """
@@ -26,7 +26,7 @@ def _cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
         The cosine similarity value between the two input vectors. If either of the
         vectors has zero magnitude, it returns 0.0.
     """
-    denom = (np.linalg.norm(a) * np.linalg.norm(b))
+    denom = np.linalg.norm(a) * np.linalg.norm(b)
     if denom == 0.0:
         return 0.0
     return float(np.dot(a, b) / denom)
@@ -84,6 +84,7 @@ def llm_answer_consistency(
         Measure(name="max_similarity", score=max_sim, time=now),
     ]
 
+
 @prediction_metric(name="NLP Noun Adjective performance")
 def llm_performance_drop(
     datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray
@@ -117,20 +118,21 @@ def llm_performance_drop(
     if dataset.data is None:
         raise ValueError("Dataset must contain data")
 
-    text_original = next((f.name for f in datashape.features
-                          if f.name == "text_original"), None)
-    text_transformed = next((f.name for f in datashape.features
-                             if f.name == "text_transformed"), None)
+    text_original = next(
+        (f.name for f in datashape.features if f.name == "text_original"), None
+    )
+    text_transformed = next(
+        (f.name for f in datashape.features if f.name == "text_transformed"), None
+    )
 
     if text_original is None or text_transformed is None:
         # Not a text-transformation dataset -> return neutral measures
         return [
-            Measure(name="original_accuracy", score=0.0,
-                    time=datetime.datetime.now()),
-            Measure(name="transformed_accuracy", score=0.0,
-                    time=datetime.datetime.now()),
-            Measure(name="performance_drop", score=0.0,
-                    time=datetime.datetime.now()),
+            Measure(name="original_accuracy", score=0.0, time=datetime.datetime.now()),
+            Measure(
+                name="transformed_accuracy", score=0.0, time=datetime.datetime.now()
+            ),
+            Measure(name="performance_drop", score=0.0, time=datetime.datetime.now()),
         ]
 
     if datashape.target is None or datashape.target.name not in dataset.data.columns:
@@ -143,8 +145,7 @@ def llm_performance_drop(
     transformed_pred = y_pred_proba[n:]
 
     if len(original_pred) != len(transformed_pred):
-        raise ValueError(
-            "Predictions must contain original and transformed pairs")
+        raise ValueError("Predictions must contain original and transformed pairs")
 
     # Compute accuracies
     y_pred_o = original_pred.argmax(axis=1)
@@ -153,7 +154,7 @@ def llm_performance_drop(
     acc_o = (y_pred_o == y_true).mean()
     acc_t = (y_pred_t == y_true).mean()
 
-    drop = (acc_o - acc_t)
+    drop = acc_o - acc_t
 
     now = datetime.datetime.now()
     return [

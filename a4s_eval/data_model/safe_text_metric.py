@@ -1,9 +1,12 @@
 from datetime import datetime
 from typing import List
+
 from a4s_eval.data_model.measure import Measure
 
 
-def safe_text_metric(metric_name: str, orig_texts: list, transformed_texts: list, compute_score_fn) -> List[Measure]:
+def safe_text_metric(
+        metric_name: str, orig_texts: list, transformed_texts: list, compute_score_fn
+) -> List[Measure]:
     """
     Generic safe wrapper for text metrics.
 
@@ -22,12 +25,7 @@ def safe_text_metric(metric_name: str, orig_texts: list, transformed_texts: list
 
     if not orig_texts or not transformed_texts:
         return [
-            Measure(
-                name=metric_name,
-                score=-1.0,
-                time=current_time,
-                feature_pid=None
-            )
+            Measure(name=metric_name, score=-1.0, time=current_time, feature_pid=None)
         ]
 
     for orig, transformed in zip(orig_texts, transformed_texts):
@@ -38,22 +36,12 @@ def safe_text_metric(metric_name: str, orig_texts: list, transformed_texts: list
         except Exception:
             score = -1.0  # fallback on error
         measures.append(
-            Measure(
-                name=metric_name,
-                score=score,
-                time=current_time,
-                feature_pid=None
-            )
+            Measure(name=metric_name, score=score, time=current_time, feature_pid=None)
         )
 
     if not measures:
         measures.append(
-            Measure(
-                name=metric_name,
-                score=-1.0,
-                time=current_time,
-                feature_pid=None
-            )
+            Measure(name=metric_name, score=-1.0, time=current_time, feature_pid=None)
         )
 
     return measures

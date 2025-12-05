@@ -16,9 +16,11 @@ class DummyModel:
     This class is intended for generating random probability distributions
     for demonstration purposes. Generally, you should use HuggingFace
     """
+
     def predict_probability(self, texts):
         probs = np.random.rand(len(texts), 2)
         return probs / probs.sum(axis=1, keepdims=True)
+
 
 def plot_performance_drop(measures: list[Measure]):
     """
@@ -33,10 +35,16 @@ def plot_performance_drop(measures: list[Measure]):
         provided measures.
     """
     acc_original = next(m.score for m in measures if m.name == "original_accuracy")
-    acc_transformed = next(m.score for m in measures if m.name == "transformed_accuracy")
+    acc_transformed = next(
+        m.score for m in measures if m.name == "transformed_accuracy"
+    )
 
     plt.figure(figsize=(6, 4))
-    plt.bar(["Original", "Transformed"], [acc_original, acc_transformed], color=["skyblue", "salmon"])
+    plt.bar(
+        ["Original", "Transformed"],
+        [acc_original, acc_transformed],
+        color=["skyblue", "salmon"],
+    )
     plt.ylim(0, 1)
     plt.ylabel("Accuracy")
     plt.title("Performance Drop")
@@ -44,7 +52,13 @@ def plot_performance_drop(measures: list[Measure]):
 
 
 def plot_consistency(measures: list[Measure]):
-    similarities = [m.score for m in measures if m.name.startswith("mean") or m.name.startswith("min") or m.name.startswith("max")]
+    similarities = [
+        m.score
+        for m in measures
+        if m.name.startswith("mean")
+           or m.name.startswith("min")
+           or m.name.startswith("max")
+    ]
     labels = [m.name for m in measures]
 
     plt.figure(figsize=(6, 4))
@@ -66,6 +80,7 @@ def plot_pos_accuracy(measures: list[Measure]):
     plt.title("POS Transformation Accuracy")
     plt.show()
 
+
 def print_measure_list(name: str, measures: list[Measure | str]):
     """
     Prints a formatted list of measures with associated scores.
@@ -81,6 +96,7 @@ def print_measure_list(name: str, measures: list[Measure | str]):
             print(f"{m.name}: {m.score:.4f}")
         else:
             print(m)
+
 
 def main():
     """
@@ -104,11 +120,19 @@ def main():
         NotImplementedError: Raised when an unsupported model type is specified.
 
     """
-    parser = argparse.ArgumentParser(description="Evaluate NLP LLM robustness on IMDB dataset")
+    parser = argparse.ArgumentParser(
+        description="Evaluate NLP LLM robustness on IMDB dataset"
+    )
     parser.add_argument("--csv", type=str, required=True, help="Path to IMDB CSV")
-    parser.add_argument("--model", type=str, default="dummy",
-                        help="Model type. Options: dummy (default), hf.")
-    parser.add_argument("--plot", action="store_true", help="Generate plots for metrics")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="dummy",
+        help="Model type. Options: dummy (default), hf.",
+    )
+    parser.add_argument(
+        "--plot", action="store_true", help="Generate plots for metrics"
+    )
 
     args = parser.parse_args()
 

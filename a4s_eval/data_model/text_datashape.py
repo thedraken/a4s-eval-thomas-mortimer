@@ -27,8 +27,8 @@ def text_datashape():
                 feature_type=FeatureType.TEXT,
                 min_value=None,
                 max_value=None,
-            )
+            ),
         ],
         target=None,
-        date=None
+        date=None,
     )
