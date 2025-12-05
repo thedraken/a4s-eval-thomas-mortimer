@@ -7,5 +7,7 @@ Extra libraries installed via UV Sync, compared to main project:
 "stanza",
 "sentence_transformers==5.1.2"
 
-python generate_imdb_csv.py --limit 1000 --output imdb_transformed.csv
-python run_eval.py --csv imdb_transformed.csv --model hf
+#Download the file
+python a4s_eval\runners\generate_imdb_csv.py --limit 1000 --output imdb_transformed.csv
+#Run the code with the file
+python a4s_eval\runners\run_eval.py --csv imdb_transformed.csv --model hf
