@@ -22,8 +22,8 @@ class DummyModel:
 # Plotting helpers
 # ---------------------------------------------------------------------------
 def plot_performance_drop(measures):
-    acc_original = next(m.score for m in measures if m.name == "accuracy_original")
-    acc_transformed = next(m.score for m in measures if m.name == "accuracy_transformed")
+    acc_original = next(m.score for m in measures if m.name == "original_accuracy")
+    acc_transformed = next(m.score for m in measures if m.name == "transformed_accuracy")
 
     plt.figure(figsize=(6, 4))
     plt.bar(["Original", "Transformed"], [acc_original, acc_transformed], color=["skyblue", "salmon"])
