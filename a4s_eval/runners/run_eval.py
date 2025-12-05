@@ -3,7 +3,6 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from datasets import List
 
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.runners.imdb_runner import NLPTransformationEvaluator

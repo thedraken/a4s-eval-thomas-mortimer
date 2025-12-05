@@ -1,6 +1,7 @@
 import uuid
+
 import pytest
-import pandas as pd
+
 from a4s_eval.data_model.evaluation import DataShape, Feature, FeatureType
 
 
