@@ -28,7 +28,8 @@ def llm_answer_consistency(datashape: DataShape, model, dataset: Dataset, y_pred
     if not hasattr(dataset, "X_original") or not hasattr(dataset, "X_transformed"):
         raise ValueError("Dataset must contain X_original and X_transformed fields for consistency metric.")
 
-    n = len(dataset.X_original)
+    df = dataset.data
+    n = len(df)
     if len(y_pred_proba) != 2 * n:
         raise ValueError("Expected predictions for original+transformed (2N samples).")
 
@@ -67,14 +68,15 @@ def llm_performance_drop(datashape: DataShape, model, dataset: Dataset, y_pred_p
     if not hasattr(dataset, "X_original") or not hasattr(dataset, "X_transformed"):
         raise ValueError("Dataset must contain X_original and X_transformed.")
 
-    y_true = dataset.y
-    n = len(dataset.X_original)
+    df = dataset.data
+    y_true = df["label"].to_numpy()
+    n = len(df)
 
     if len(y_pred_proba) != 2 * n:
         raise ValueError("Expected predictions for original+transformed samples in y_pred_proba.")
 
-    pred_original = np.argmax(y_pred_proba[:n], axis=1)
-    pred_transformed = np.argmax(y_pred_proba[n:], axis=1)
+    pred_original = y_pred_proba[:n]
+    pred_transformed = y_pred_proba[n:]
 
     acc_original = float(np.mean(pred_original == y_true))
     acc_transformed = float(np.mean(pred_transformed == y_true))

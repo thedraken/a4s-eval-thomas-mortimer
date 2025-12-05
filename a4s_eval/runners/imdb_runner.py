@@ -91,18 +91,14 @@ class NLPTransformationEvaluator:
             data=df
         )
 
-        # Prepare expected fields for internal metrics
-        dataset.X_original = df["text_original"].tolist()
-        dataset.X_transformed = df["text_transformed"].tolist()
-        dataset.y = df["label"].to_numpy()
-
         return dataset
 
     def run_predictions(self, dataset: Dataset) -> np.ndarray:
         """
         Calls model.predict_proba() on both original+transformed samples.
         """
-        texts = dataset.X_original + dataset.X_transformed
+        df = dataset.data
+        texts = df["text_original"].tolist() + df["text_transformed"].tolist()
         return self.model.predict_proba(texts)
 
     def evaluate(self, df: pd.DataFrame):
@@ -117,7 +113,7 @@ class NLPTransformationEvaluator:
             datashape=dataset.shape,
             model=self.model,
             dataset=dataset,
-            y_pred_proba=y_pred
+            y_pred_proba=y_pred,
         )
 
         performance = llm_performance_drop(
