@@ -4,9 +4,17 @@ from pathlib import Path
 
 def plot_transformation_accuracy(scores: dict, out_dir: str | Path):
     """
-    scores = {"noun_adj_accuracy": float, "noun_accuracy": float, "adj_accuracy": float}
-    """
+    Generates and saves a bar plot illustrating the accuracy of POS transformations.
 
+    Parameters:
+    scores (dict): A dictionary where keys are the labels/identifiers of POS transformations
+        and values are their corresponding accuracy scores.
+    out_dir (str | Path): The directory where the generated plot should be saved. If it does
+        not exist, it will be created.
+
+    Returns:
+    Path: The path to the saved plot file.
+    """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -30,6 +38,22 @@ def plot_transformation_accuracy(scores: dict, out_dir: str | Path):
 
 
 def plot_robustness_consistency(robustness: float, consistency: float, out_dir: str | Path):
+    """
+    Generates a bar plot for robustness and consistency scores, saves it as an image
+    in the specified directory, and returns the file path.
+
+    Parameters:
+    robustness: float
+        Robustness score as a decimal version of a percentage, e.g. 0.875 for 87.5%.
+    consistency: float
+        Consistency score as a decimal version of a percentage.
+    out_dir: str | Path
+        Directory where the resulting plot image will be saved.
+
+    Returns:
+    Path
+        Path to the saved plot image file.
+    """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 

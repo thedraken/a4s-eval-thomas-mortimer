@@ -11,6 +11,29 @@ nlp = stanza.Pipeline('en', processors='tokenize,pos', tokenize_no_ssplit=True)
 
 
 def _compute_pos_measures(ref_texts: list[str], eval_texts: list[str]) -> list[Measure]:
+    """
+    Analyzes part-of-speech (POS) tag consistency between reference and evaluated text sets and computes
+    accuracy measures for nouns, adjectives, and overall POS stability.
+
+    This function takes two lists: one containing reference texts and another containing
+    evaluated texts. For each pair of reference and evaluated texts, the consistency
+    of their POS tags is measured. Three metrics are computed:
+    noun accuracy, adjective accuracy, and overall POS stability, where overall POS stability checks if
+    the first letter of each POS tag matches across text pairs.
+
+    Parameters:
+    ref_texts: list[str]
+        A list of text strings used for comparison.
+    eval_texts: list[str]
+        A list of evaluated text strings for comparison.
+
+    Returns:
+    list[Measure]
+        A list of `Measure` objects representing the computed metrics:
+        - `noun_accuracy`: Accuracy of nouns in evaluated texts compared to reference texts.
+        - `adjective_accuracy`: Accuracy of adjectives in evaluated texts compared to reference texts.
+        - `overall_pos_stability`: Measure of overall POS stability based on the first letter of POS tags.
+    """
     noun_correct: list[int] = []
     adj_correct: list[int] = []
     overall_correct: list[int] = []
@@ -48,6 +71,13 @@ def _compute_pos_measures(ref_texts: list[str], eval_texts: list[str]) -> list[M
 
 
 def _neutral_pos_measures() -> list[Measure]:
+    """
+    Generates a list of neutral part-of-speech (POS) measurement objects.
+    Returned as a default if the data being parsed is not valid for this check.
+    Returns:
+        list[Measure]: A list of Measure objects, each initialised with a
+        score of 0.0 and the current timestamp.
+    """
     now = datetime.datetime.now()
     return [
         Measure(name="noun_accuracy", score=0.0, time=now),
@@ -61,22 +91,32 @@ def noun_adj_transformation_accuracy(
     datashape: DataShape | None, reference: Dataset, evaluated: Dataset
 ) -> list[Measure]:
     """
-    POS-based stability between reference and evaluated datasets.
+    Calculates the accuracy of noun and adjective transformations in a dataset by comparing
+    a reference dataset with an evaluated dataset. The function processes text data,
+    determines the correctness of noun and adjective transformations,
+    and generates measures reflecting these accuracies.
 
-    Behaviour:
-      * If datashape is None:
-          - Expect reference.data['text_original'] and evaluated.data['text_transformed'].
-          - Raise ValueError if they are missing (matches unit tests).
-      * If datashape is not None:
-          - If no TEXT features exist -> return neutral measures (not applicable).
-          - If TEXT features exist -> try to use 'text_original' / 'text_transformed'
-            or fall back to any shared TEXT column names.
+    Parameters:
+        datashape (DataShape | None): A schema describing the expected structure
+            and features of the data, including expected feature types.
+        reference (Dataset): The reference dataset containing the original text data.
+        evaluated (Dataset): The evaluated dataset containing the transformed text data.
+
+    Returns:
+        list[Measure]: A list of Measure objects that includes the following:
+            - noun_accuracy: Accuracy of noun transformations.
+            - adjective_accuracy: Accuracy of adjective transformations.
+            - overall_pos_stability: Overall accuracy across both parts of speech.
+
+    Raises:
+        ValueError: If either the `reference` or `evaluated` dataset does not contain data.
+        ValueError: If the reference and evaluated datasets are of unequal length.
     """
-    # Check dataset
+    # Check dataset has values
     if reference.data is None or evaluated.data is None:
         raise ValueError("Both reference and evaluated datasets must contain data")
 
-    # Columns from DataShape
+    # Columns from the DataShape
     ref_col = next((f.name for f in datashape.features
                     if f.feature_type == FeatureType.TEXT and f.name in reference.data.columns and "original" in f.name),
                    None)
@@ -85,7 +125,7 @@ def noun_adj_transformation_accuracy(
                     None)
 
     if ref_col is None or eval_col is None:
-        # Not a text-transformation dataset → return neutral measures
+        # Not a text-transformation dataset -> return neutral measures
         return [
             Measure(name="noun_accuracy", score=0.0,
                     time=datetime.datetime.now()),

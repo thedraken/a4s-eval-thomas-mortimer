@@ -2,26 +2,37 @@ import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from datasets import List
+
 from hf_model import HFClassifier
 
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.runners.imdb_runner import NLPTransformationEvaluator
 
 
-# ---------------------------------------------------------------------------
-# Dummy Model (replace with real HFClassifier if desired)
-# ---------------------------------------------------------------------------
 class DummyModel:
-    """Simple model that returns random probability distributions."""
-    def predict_proba(self, texts):
+    """
+    A mock class for demonstrating a basic model structure.
+
+    This class is intended for generating random probability distributions
+    for demonstration purposes. Generally, you should use HuggingFace
+    """
+    def predict_probability(self, texts):
         probs = np.random.rand(len(texts), 2)
         return probs / probs.sum(axis=1, keepdims=True)
 
+def plot_performance_drop(measures: List[Measure]):
+    """
+    Plots a bar chart to visualise the drop in performance between original
+    and transformed accuracies.
 
-# ---------------------------------------------------------------------------
-# Plotting helpers
-# ---------------------------------------------------------------------------
-def plot_performance_drop(measures):
+    Arguments:
+        measures (list): A list of objects, each containing 'name' and 'score' attributes.
+
+    Raises:
+        StopIteration: If 'original_accuracy' or 'transformed_accuracy' is not found in the
+        provided measures.
+    """
     acc_original = next(m.score for m in measures if m.name == "original_accuracy")
     acc_transformed = next(m.score for m in measures if m.name == "transformed_accuracy")
 
@@ -33,7 +44,7 @@ def plot_performance_drop(measures):
     plt.show()
 
 
-def plot_consistency(measures):
+def plot_consistency(measures: List[Measure]):
     similarities = [m.score for m in measures if m.name.startswith("mean") or m.name.startswith("min") or m.name.startswith("max")]
     labels = [m.name for m in measures]
 
@@ -45,7 +56,7 @@ def plot_consistency(measures):
     plt.show()
 
 
-def plot_pos_accuracy(measures):
+def plot_pos_accuracy(measures: List[Measure]):
     scores = [m.score for m in measures]
     labels = [m.name for m in measures]
 
@@ -56,11 +67,15 @@ def plot_pos_accuracy(measures):
     plt.title("POS Transformation Accuracy")
     plt.show()
 
-
-# ---------------------------------------------------------------------------
-# Pretty-printing helper
-# ---------------------------------------------------------------------------
 def print_measure_list(name, measures):
+    """
+    Prints a formatted list of measures with associated scores.
+
+    Parameters:
+    name (str): The heading to be printed above the list of measures.
+    measures (list): A list of measures to be printed.
+
+    """
     print(f"\n==== {name} ====")
     for m in measures:
         if isinstance(m, Measure):
@@ -68,15 +83,30 @@ def print_measure_list(name, measures):
         else:
             print(m)
 
-
-# ---------------------------------------------------------------------------
-# Main CLI runner
-# ---------------------------------------------------------------------------
 def main():
+    """
+    Parses command-line arguments, loads the IMDB dataset, initializes a selected NLP model, evaluates the
+    model's robustness using the dataset, and optionally generates performance plots.
+
+    Raises NotImplementedError if an unsupported model type is specified.
+
+    Arguments:
+        --csv (str): Path to the IMDB CSV file. This argument is mandatory.
+        Check Readme for Thomas Mortimer's project for generation details
+        --model (str): Model type to use for evaluation. Options include 'dummy' (default) and 'hf'.
+        --plot: If specified, generates plots for performance metrics.
+
+    Returns:
+        None: The function does not return any value.
+
+    Raises:
+        NotImplementedError: Raised when an unsupported model type is specified.
+
+    """
     parser = argparse.ArgumentParser(description="Evaluate NLP LLM robustness on IMDB dataset")
     parser.add_argument("--csv", type=str, required=True, help="Path to IMDB CSV")
     parser.add_argument("--model", type=str, default="dummy",
-                        help="Model type. Options: dummy (default), hf-bert, etc.")
+                        help="Model type. Options: dummy (default), hf.")
     parser.add_argument("--plot", action="store_true", help="Generate plots for metrics")
 
     args = parser.parse_args()

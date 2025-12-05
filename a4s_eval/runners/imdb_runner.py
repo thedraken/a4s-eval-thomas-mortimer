@@ -43,7 +43,7 @@ class NLPTransformationEvaluator:
     def run_predictions(self, dataset: Dataset) -> np.ndarray:
         df = dataset.data
         texts = df["text_original"].tolist() + df["text_transformed"].tolist()
-        return self.model.predict_proba(texts)
+        return self.model.predict_probability(texts)
 
     def evaluate(self, df: pd.DataFrame):
         print("Preparing dataset...")

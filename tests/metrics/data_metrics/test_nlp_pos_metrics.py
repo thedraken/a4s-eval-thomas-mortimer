@@ -68,9 +68,25 @@ def text_datashape():
         ),
     ])
 
-# --- Test with patched NLP ---
 @patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_mixed_accuracy(mock_nlp, text_datashape, reference_dataset_basic, evaluated_dataset_mixed):
+    """
+    Tests the accuracy of noun and adjective transformations in a mixed
+    dataset.
+
+    Args:
+        mock_nlp: Mocked NLP pipeline for generating fake documents with predefined
+            parts of speech (POS) tags.
+        text_datashape: Datashape of the text data being examined.
+        reference_dataset_basic: The reference dataset used for comparing the
+            evaluation results.
+        evaluated_dataset_mixed: The dataset being evaluated, containing mixed
+            transformations.
+
+    Raises:
+        AssertionError: If the evaluated noun or adjective transformation
+            accuracy does not match the expected values.
+    """
     # Patch nlp pipeline to return fake docs
     mock_nlp.side_effect = [
         fake_stanza_doc(["NN", "JJ"]),  # ref 1

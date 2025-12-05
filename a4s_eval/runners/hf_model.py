@@ -6,10 +6,10 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 class HFClassifier:
     """
     HuggingFace sentiment classifier that exposes a predict_proba(texts) API.
-    Supports batching and GPU acceleration when available.
     """
 
     def __init__(self, model_name="distilbert-base-uncased-finetuned-sst-2-english", batch_size=16):
+        # If possible, use GPU, otherwise fallback to CPU
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {self.device}")
 
@@ -20,10 +20,9 @@ class HFClassifier:
 
         self.batch_size = batch_size
 
-    def predict_proba(self, texts):
+    def predict_probability(self, texts) -> np.ndarray:
         """
         Predict probabilities for a list of strings.
-        Returns ndarray shaped (N, num_classes)
         """
         all_probs = []
 
@@ -39,8 +38,8 @@ class HFClassifier:
                     return_tensors="pt"
                 ).to(self.device)
 
-                logits = self.model(**enc).logits      # (B, num_classes)
-                probs = torch.softmax(logits, dim=-1)  # convert logits → softmax
+                logits = self.model(**enc).logits
+                probs = torch.softmax(logits, dim=-1)
 
                 all_probs.append(probs.cpu().numpy())
 

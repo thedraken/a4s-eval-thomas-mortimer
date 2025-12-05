@@ -7,9 +7,24 @@ from a4s_eval.data_model.evaluation import DataShape, Dataset, FeatureType, Mode
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.prediction_metric_registry import prediction_metric
 
+# Sentence transformer model, takes sentences and slightly changes them
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
 def _cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
+    """
+    Computes the cosine similarity between two vectors.
+
+    Parameters:
+    a: np.ndarray
+        The first vector. Must be a non-empty numpy array.
+    b: np.ndarray
+        The second vector. Must be a non-empty numpy array.
+
+    Returns:
+    float
+        The cosine similarity value between the two input vectors. If either of the
+        vectors has zero magnitude, it returns 0.0.
+    """
     denom = (np.linalg.norm(a) * np.linalg.norm(b))
     if denom == 0.0:
         return 0.0
@@ -21,13 +36,24 @@ def llm_answer_consistency(
     datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray
 ) -> list[Measure]:
     """
-    Computes similarity between predictions on original vs transformed texts.
+    Calculate prediction consistency between original and transformed datasets.
 
-    Assumes:
-      - dataset.data has N rows (one per logical sample)
-      - y_pred_proba has 2N rows:
-          first N  -> predictions for original text
-          next  N  -> predictions for transformed text
+    Parameters:
+    datashape (DataShape): Shape information about the dataset.
+    model (Model): The model being evaluated.
+    dataset (Dataset): Dataset containing the original data.
+    y_pred_proba (np.ndarray): Array of predicted probabilities. Expected to have
+        shape (2 * n, ...) for n samples in the original dataset and their transformed
+        counterparts.
+
+    Returns:
+    list[Measure]: List of Measure instances containing mean, minimum, and maximum
+        cosine similarity scores.
+
+    Raises:
+    ValueError: If the input dataset does not contain data.
+    ValueError: If the shape of y_pred_proba does not match the expected
+        2 * n samples for original and transformed data.
     """
 
     if dataset.data is None:
@@ -62,14 +88,29 @@ def llm_performance_drop(
     datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray
 ) -> list[Measure]:
     """
-    Computes accuracy drop between original and transformed text predictions.
+    Calculates and evaluates the performance drop between predictions on original and
+    transformed text datasets.
 
-    Assumes:
-      - dataset.data has a 'y' column with gold labels
-      - dataset.data has N rows
-      - y_pred_proba has 2N rows:
-          first N  -> predictions for original text
-          next  N  -> predictions for transformed text
+    Attributes:
+        name (str): The name of the metric being evaluated, fixed as
+                    "NLP Noun Adjective performance".
+
+    Args:
+        datashape (DataShape): The structure of the dataset, including feature and
+            target definitions.
+        model (Model): The machine learning model responsible for generating predictions.
+        dataset (Dataset): The dataset which contains both the data and associated labels.
+        y_pred_proba (np.ndarray): A numpy array of probabilities representing predictions
+            for both original and transformed data.
+
+    Returns:
+        list[Measure]: A list containing measures for original accuracy, transformed
+            accuracy, and the computed performance drop.
+
+    Raises:
+        ValueError: Raised if the dataset does not contain data, target feature is not
+            specified, or prediction structures (original and transformed
+            data) have different sizes.
     """
 
     if dataset.data is None:
@@ -81,7 +122,7 @@ def llm_performance_drop(
                              if f.name == "text_transformed"), None)
 
     if text_original is None or text_transformed is None:
-        # Not a text-transformation dataset → return neutral measures
+        # Not a text-transformation dataset -> return neutral measures
         return [
             Measure(name="original_accuracy", score=0.0,
                     time=datetime.datetime.now()),
