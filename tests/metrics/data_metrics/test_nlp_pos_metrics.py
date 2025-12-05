@@ -18,9 +18,9 @@ def make_fake_stanza_doc(pos_tags):
     Creates a mock stanza Document object:
     doc.sentences[0].words[i].xpos = tag
     Args:
-        pos_tags:
+        pos_tags: The tags of the sentence
 
-    Returns:
+    Returns:A mock of the sentence
 
     """
     mock_word_objs = []
