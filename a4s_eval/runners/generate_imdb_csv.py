@@ -1,25 +1,19 @@
 import argparse
 import pandas as pd
-
-try:
-    import stanza
-    stanza.download("en")
-    nlp = stanza.Pipeline("en", processors="tokenize,pos")
-    USE_STANZA = True
-except Exception:
-    print("⚠️  Stanza not available — using mock transformation.")
-    USE_STANZA = False
-
+import stanza
 from datasets import load_dataset
+
+
+stanza.download("en")
+nlp = stanza.Pipeline("en", processors="tokenize,pos")
+
+
 
 def transform_text(text):
     """
     Attempts a noun/adjective swap using stanza.
     If stanza unavailable, returns mock transformation.
     """
-    if not USE_STANZA:
-        return text.replace("good", "great").replace("bad", "terrible")
-
     doc = nlp(text)
     out = []
 
