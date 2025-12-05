@@ -1,22 +1,12 @@
 import uuid
 
-from numpy import isin
 import pandas as pd
-from a4s_eval.metric_registries.model_metric_registry import model_metric_registry
-from a4s_eval.metric_registries.model_metric_registry import ModelMetric
-from a4s_eval.service.functional_model import TabularClassificationModel
-from a4s_eval.service.model_factory import load_model
 import pytest
 
-from a4s_eval.data_model.evaluation import (
-    Dataset,
-    DataShape,
-    Model,
-    ModelConfig,
-    ModelFramework,
-    ModelTask,
-)
-
+from a4s_eval.data_model.evaluation import (DataShape, Dataset, Model, ModelConfig, ModelFramework, ModelTask)
+from a4s_eval.metric_registries.model_metric_registry import ModelMetric, model_metric_registry
+from a4s_eval.service.functional_model import TabularClassificationModel
+from a4s_eval.service.model_factory import load_model
 from tests.save_measures_utils import save_measures
 
 
