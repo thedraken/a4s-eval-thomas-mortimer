@@ -21,7 +21,7 @@ class DummyModel:
         probs = np.random.rand(len(texts), 2)
         return probs / probs.sum(axis=1, keepdims=True)
 
-def plot_performance_drop(measures: List[Measure]):
+def plot_performance_drop(measures: list[Measure]):
     """
     Plots a bar chart to visualise the drop in performance between original
     and transformed accuracies.
