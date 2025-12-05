@@ -40,14 +40,14 @@ def test_llm_answer_consistency_basic(dataset_basic, model_basic):
     assert 1.0 >= results[0].score >= 0.0
 
 
-def test_llm_performance_drop_basic(dataset_basic, dummy_model):
+def test_llm_performance_drop_basic(dataset_basic, model_basic):
     ds_shape = dataset_basic.shape
     y_pred_proba = np.vstack([
         np.array([[0.9, 0.1], [0.1, 0.9]]),  # original correct
         np.array([[0.2, 0.8], [0.8, 0.2]])  # transformed incorrect
     ])
 
-    results = llm_performance_drop(ds_shape, dummy_model, dataset_basic, y_pred_proba)
+    results = llm_performance_drop(ds_shape, model_basic, dataset_basic, y_pred_proba)
 
     original_acc = [m.score for m in results if m.name == "original_accuracy"][0]
     transformed_acc = [m.score for m in results if m.name == "transformed_accuracy"][0]

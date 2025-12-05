@@ -9,136 +9,113 @@ from a4s_eval.metric_registries.prediction_metric_registry import prediction_met
 
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
-def semantic_similarity(a: str, b: str) -> float:
-    emb = embedder.encode([a, b])
-    return float(np.dot(emb[0], emb[1]) / (np.linalg.norm(emb[0]) * np.linalg.norm(emb[1])))
+def _cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
+    denom = (np.linalg.norm(a) * np.linalg.norm(b))
+    if denom == 0.0:
+        return 0.0
+    return float(np.dot(a, b) / denom)
 
 
 @prediction_metric(name="NLP Noun Adjective consistency")
 def llm_answer_consistency(
-    datashape: DataShape,
-    model: Model,
-    dataset: Dataset,
-    y_pred_proba: np.ndarray
+    datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray
 ) -> list[Measure]:
     """
-    Computes answer consistency between model predictions on original and transformed text.
+    Computes similarity between predictions on original vs transformed texts.
 
-    Consistency = fraction where argmax(original[i]) == argmax(transformed[i])
+    Assumes:
+      - dataset.data has N rows (one per logical sample)
+      - y_pred_proba has 2N rows:
+          first N  -> predictions for original text
+          next  N  -> predictions for transformed text
     """
 
-    # -------------------------
-    # Validate dataset
-    # -------------------------
     if dataset.data is None:
         raise ValueError("Dataset must contain data")
 
-    # -------------------------
-    # Determine text column from DataShape
-    # Tests expect this behavior
-    # -------------------------
-    text_col = next(
-        (f.name for f in datashape.features if f.feature_type == "text" and f.name in dataset.data.columns),
-        None,
-    )
-    if text_col is None:
-        raise ValueError("Dataset must contain a text column defined in DataShape features")
+    n = len(dataset.data)
+    if y_pred_proba.shape[0] != 2 * n:
+        raise ValueError("Expected predictions for original+transformed (2N samples).")
 
-    n_samples = dataset.data.shape[0]
+    preds_orig = y_pred_proba[:n]
+    preds_trans = y_pred_proba[n:]
 
-    # -------------------------
-    # Validate prediction length
-    # y_pred_proba must contain 2N predictions (original + transformed)
-    # -------------------------
-    if y_pred_proba.shape[0] != 2 * n_samples:
-        raise ValueError("Number of predictions does not match original + transformed samples")
+    sims: list[float] = []
+    for p1, p2 in zip(preds_orig, preds_trans):
+        sims.append(_cosine_sim(p1, p2))
 
-    # -------------------------
-    # Split predictions
-    # -------------------------
-    original_preds = y_pred_proba[:n_samples]
-    transformed_preds = y_pred_proba[n_samples:]
+    now = datetime.datetime.now()
+    sims_arr = np.array(sims, dtype=float)
 
-    # -------------------------
-    # Compute argmax classes
-    # -------------------------
-    orig_class = np.argmax(original_preds, axis=1)
-    trans_class = np.argmax(transformed_preds, axis=1)
-
-    # -------------------------
-    # Compute consistency
-    # -------------------------
-    consistency = np.mean(orig_class == trans_class)
+    mean_sim = float(np.mean(sims_arr)) if sims else 0.0
+    min_sim = float(np.min(sims_arr)) if sims else 0.0
+    max_sim = float(np.max(sims_arr)) if sims else 0.0
 
     return [
-        Measure(
-            name="answer_consistency",
-            score=float(consistency),
-            time=datetime.datetime.now()
-        )
+        Measure(name="mean_prediction_similarity", score=mean_sim, time=now),
+        Measure(name="min_similarity", score=min_sim, time=now),
+        Measure(name="max_similarity", score=max_sim, time=now),
     ]
 
-
 @prediction_metric(name="NLP Noun Adjective performance")
-def llm_performance_drop(datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray):
+def llm_performance_drop(
+    datashape: DataShape, model: Model, dataset: Dataset, y_pred_proba: np.ndarray
+) -> list[Measure]:
     """
     Computes accuracy drop between original and transformed text predictions.
 
-    Args:
-        datashape: Metadata about dataset shape
-        model: Model object used for inference
-        dataset: Dataset containing original and transformed texts and target labels
-        y_pred_proba: Numpy array of predicted probabilities for the transformed texts
-
-    Returns:
-        List[Measure]: accuracy on original, accuracy on transformed, and performance drop
+    Assumes:
+      - dataset.data has a 'y' column with gold labels
+      - dataset.data has N rows
+      - y_pred_proba has 2N rows:
+          first N  -> predictions for original text
+          next  N  -> predictions for transformed text
     """
 
-    # --- Step 1: Validate dataset ---
     if dataset.data is None:
         raise ValueError("Dataset must contain data")
-    if dataset.shape.target is None:
+
+    text_original = next((f.name for f in datashape.features
+                          if f.name == "text_original"), None)
+    text_transformed = next((f.name for f in datashape.features
+                             if f.name == "text_transformed"), None)
+
+    if text_original is None or text_transformed is None:
+        # Not a text-transformation dataset → return neutral measures
+        return [
+            Measure(name="original_accuracy", score=0.0,
+                    time=datetime.datetime.now()),
+            Measure(name="transformed_accuracy", score=0.0,
+                    time=datetime.datetime.now()),
+            Measure(name="performance_drop", score=0.0,
+                    time=datetime.datetime.now()),
+        ]
+
+    if datashape.target is None or datashape.target.name not in dataset.data.columns:
         raise ValueError("DataShape must specify a target feature")
+    y_true = dataset.data[datashape.target.name].to_numpy()
 
-    target_name = dataset.shape.target.name
-    if target_name not in dataset.data.columns:
-        raise ValueError(f"Dataset must contain target column '{target_name}'")
+    n = len(y_true)
 
-    # --- Step 2: Identify text columns from features ---
-    text_features = [f.name for f in datashape.features if f.feature_type == FeatureType.TEXT]
-    if not text_features:
-        raise ValueError("DataShape must have at least one text feature")
+    original_pred = y_pred_proba[:n]
+    transformed_pred = y_pred_proba[n:]
 
-    # Use first text column as 'original', second (if present) as 'transformed'
-    text_orig_col = text_features[0]
-    text_trans_col = text_features[1] if len(text_features) > 1 else text_features[0]
+    if len(original_pred) != len(transformed_pred):
+        raise ValueError(
+            "Predictions must contain original and transformed pairs")
 
-    if text_orig_col not in dataset.data.columns or text_trans_col not in dataset.data.columns:
-        raise ValueError(f"Dataset must have '{text_orig_col}' and '{text_trans_col}' columns")
+    # Compute accuracies
+    y_pred_o = original_pred.argmax(axis=1)
+    y_pred_t = transformed_pred.argmax(axis=1)
 
-    # --- Step 3: Compute predictions ---
-    # For simplicity, assume y_pred_proba corresponds to transformed text predictions
-    y_true = dataset.data[target_name].to_numpy()
+    acc_o = (y_pred_o == y_true).mean()
+    acc_t = (y_pred_t == y_true).mean()
 
-    # Original text predictions: assume the model stored in `model.dataset` can provide predictions
-    # Here we simulate with same predictions as y_true for demonstration
-    # In real usage, you would run `model` on `dataset.data[text_orig_col]`
-    y_pred_orig = np.argmax(y_pred_proba, axis=1)  # placeholder: assume perfect on original
-    y_pred_trans = np.argmax(y_pred_proba, axis=1)
+    drop = (acc_o - acc_t)
 
-    if len(y_true) != len(y_pred_trans) or len(y_true) != len(y_pred_orig):
-        raise ValueError("Mismatch between number of samples and predictions")
-
-    # --- Step 4: Compute accuracies ---
-    acc_orig = np.mean(y_pred_orig == y_true)
-    acc_trans = np.mean(y_pred_trans == y_true)
-    perf_drop = acc_orig - acc_trans
-
-    # --- Step 5: Return Measure objects ---
     now = datetime.datetime.now()
     return [
-        Measure(name="accuracy_original", score=float(acc_orig), time=now),
-        Measure(name="accuracy_transformed", score=float(acc_trans), time=now),
-        Measure(name="performance_drop", score=float(perf_drop), time=now),
+        Measure(name="original_accuracy", score=float(acc_o), time=now),
+        Measure(name="transformed_accuracy", score=float(acc_t), time=now),
+        Measure(name="performance_drop", score=float(drop), time=now),
     ]
-

@@ -48,17 +48,39 @@ def empty_datasets():
         Dataset(pid=uuid4(), shape=shape_eval, data=pd.DataFrame())
     )
 
+@pytest.fixture
+def text_datashape():
+    # Provide a default DataShape that includes both expected features
+    return DataShape(features=[
+        Feature(
+            pid=uuid.uuid4(),
+            name="text_original",
+            feature_type=FeatureType.TEXT,
+            min_value=None,
+            max_value=None,
+        ),
+        Feature(
+            pid=uuid.uuid4(),
+            name="text_transformed",
+            feature_type=FeatureType.TEXT,
+            min_value=None,
+            max_value=None,
+        ),
+    ])
+
 # --- Test with patched NLP ---
 @patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_mixed_accuracy(mock_nlp, text_datashape, reference_dataset_basic, evaluated_dataset_mixed):
     # Patch nlp pipeline to return fake docs
     mock_nlp.side_effect = [
-        fake_stanza_doc(["NN", "JJ"]),  # reference
-        fake_stanza_doc(["NN", "NN"])   # evaluated
+        fake_stanza_doc(["NN", "JJ"]),  # ref 1
+        fake_stanza_doc(["NN", "NN"]),  # eval 1
+        fake_stanza_doc(["NN", "JJ"]),  # ref 2
+        fake_stanza_doc(["NN", "NN"]),  # eval 2
     ]
 
     results = noun_adj_transformation_accuracy(
-        datashape=reference_dataset_basic.shape,
+        datashape=text_datashape,
         reference=reference_dataset_basic,
         evaluated=evaluated_dataset_mixed
     )
