@@ -46,9 +46,12 @@ class NLPTransformationEvaluator:
         return self.model.predict_proba(texts)
 
     def evaluate(self, df: pd.DataFrame):
+        print("Preparing dataset...")
         dataset = self.prepare_dataset(df)
+        print("Running predictions...")
         y_pred = self.run_predictions(dataset)
 
+        print("Running consistency check...")
         consistency = llm_answer_consistency(
             datashape=dataset.shape,
             model=self.model,
@@ -56,6 +59,7 @@ class NLPTransformationEvaluator:
             y_pred_proba=y_pred
         )
 
+        print("Running performance check...")
         performance = llm_performance_drop(
             datashape=dataset.shape,
             model=self.model,
@@ -63,12 +67,14 @@ class NLPTransformationEvaluator:
             y_pred_proba=y_pred
         )
 
+        print("Running accuracy check...")
         pos_accuracy = noun_adj_transformation_accuracy(
             datashape=dataset.shape,
             reference=dataset,
             evaluated=dataset
         )
 
+        print("Evaluation complete.")
         return {
             "consistency": consistency,
             "performance_drop": performance,

@@ -107,8 +107,11 @@ def noun_adj_transformation_accuracy(
     adj_total = 0
 
     # --- For each pair of sentences ---
+    max_size = len(ref_texts)
+    counter = 0
     for ref_t, eval_t in zip(ref_texts, eval_texts):
-
+        counter += 1
+        print(f"Processing sentence {counter}/{max_size}")
         ref_doc = nlp(ref_t)
         eval_doc = nlp(eval_t)
 

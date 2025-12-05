@@ -8,6 +8,7 @@ Extra libraries installed via UV Sync, compared to main project:
 "sentence_transformers==5.1.2"
 
 #Download the file
+Reduce the limit to speed it up, 1000 might take a while
 uv run python a4s_eval/runners/generate_imdb_csv.py --limit 1000 --output imdb_transformed.csv
 #Run the code with the file
 uv run python a4s_eval/runners/run_eval.py --csv imdb_transformed.csv --model hf --plot
