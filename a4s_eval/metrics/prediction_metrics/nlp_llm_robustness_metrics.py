@@ -2,6 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import datetime
 
+from a4s_eval.data_model.evaluation import DataShape, Dataset
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.metric_registries.prediction_metric_registry import prediction_metric
 
@@ -12,7 +13,7 @@ def semantic_similarity(a: str, b: str) -> float:
     return float(np.dot(emb[0], emb[1]) / (np.linalg.norm(emb[0]) * np.linalg.norm(emb[1])))
 
 @prediction_metric(name="NLP Noun Adjective consistency")
-def llm_answer_consistency(datashape, model, dataset, y_pred_proba: np.ndarray):
+def llm_answer_consistency(datashape: DataShape, model, dataset: Dataset, y_pred_proba: np.ndarray):
     """
     Computes similarity between predictions on original vs transformed texts.
     Args:
@@ -47,7 +48,7 @@ def llm_answer_consistency(datashape, model, dataset, y_pred_proba: np.ndarray):
     return [mean_prediction_similarity, min_similarity, max_similarity]
 
 @prediction_metric(name="NLP Noun Adjective performance")
-def llm_performance_drop(datashape, model, dataset, y_pred_proba: np.ndarray):
+def llm_performance_drop(datashape: DataShape, model, dataset: Dataset, y_pred_proba: np.ndarray):
     """
     Computes accuracy drop between original and transformed text predictions
     Args:

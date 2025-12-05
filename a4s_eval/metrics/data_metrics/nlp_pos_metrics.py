@@ -1,3 +1,4 @@
+from a4s_eval.data_model.evaluation import DataShape
 from a4s_eval.metric_registries.data_metric_registry import data_metric
 from a4s_eval.data_model.measure import Measure
 import stanza
@@ -8,7 +9,7 @@ nlp = stanza.Pipeline('en', processors='tokenize,pos', tokenize_no_ssplit=True)
 
 
 @data_metric(name="Noun/Adjective Transformation Accuracy")
-def noun_adj_transformation_accuracy(datashape, reference, evaluated):
+def noun_adj_transformation_accuracy(datashape: DataShape, reference, evaluated):
     """
     Args:
         datashape: Metadata about the dataset shape
