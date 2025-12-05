@@ -1,8 +1,8 @@
 import argparse
+
 import pandas as pd
 import stanza
 from datasets import load_dataset
-
 
 stanza.download("en")
 nlp = stanza.Pipeline("en", processors="tokenize,pos")

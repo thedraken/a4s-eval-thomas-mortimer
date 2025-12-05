@@ -4,8 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from a4s_eval.metrics.prediction_metrics.nlp_llm_robustness_metrics import llm_answer_consistency, llm_performance_drop
-from a4s_eval.data_model.evaluation import DataShape, Dataset, Feature, FeatureType, Model
+from a4s_eval.data_model.evaluation import DataShape, Dataset, Feature, \
+    FeatureType, Model
+from a4s_eval.metrics.prediction_metrics.nlp_llm_robustness_metrics import \
+    llm_answer_consistency, llm_performance_drop
+
 
 @pytest.fixture
 def dataset_basic():

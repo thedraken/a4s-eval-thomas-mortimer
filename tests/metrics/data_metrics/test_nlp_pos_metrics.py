@@ -1,12 +1,16 @@
 import uuid
-
-import pytest
-import pandas as pd
-from uuid import uuid4
-from unittest.mock import patch
-from a4s_eval.metrics.data_metrics.nlp_pos_metrics import noun_adj_transformation_accuracy
-from a4s_eval.data_model.evaluation import Feature, FeatureType, DataShape, Dataset
 from unittest.mock import MagicMock
+from unittest.mock import patch
+from uuid import uuid4
+
+import pandas as pd
+import pytest
+
+from a4s_eval.data_model.evaluation import Feature, FeatureType, DataShape, \
+    Dataset
+from a4s_eval.metrics.data_metrics.nlp_pos_metrics import \
+    noun_adj_transformation_accuracy
+
 
 # Mock a "doc" object returned by nlp()
 def fake_stanza_doc(pos_tags):

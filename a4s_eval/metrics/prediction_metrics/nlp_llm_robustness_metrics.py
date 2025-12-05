@@ -3,9 +3,10 @@ import datetime
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from a4s_eval.data_model.evaluation import DataShape, Dataset, FeatureType, Model
+from a4s_eval.data_model.evaluation import DataShape, Dataset, Model
 from a4s_eval.data_model.measure import Measure
-from a4s_eval.metric_registries.prediction_metric_registry import prediction_metric
+from a4s_eval.metric_registries.prediction_metric_registry import \
+    prediction_metric
 
 # Sentence transformer model, takes sentences and slightly changes them
 embedder = SentenceTransformer('all-MiniLM-L6-v2')

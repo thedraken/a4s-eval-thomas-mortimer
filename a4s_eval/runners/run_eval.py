@@ -1,13 +1,13 @@
 import argparse
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from datasets import List
 
-from hf_model import HFClassifier
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from datasets import List
 
 from a4s_eval.data_model.measure import Measure
 from a4s_eval.runners.imdb_runner import NLPTransformationEvaluator
+from hf_model import HFClassifier
 
 
 class DummyModel:
@@ -85,15 +85,17 @@ def print_measure_list(name, measures):
 
 def main():
     """
-    Parses command-line arguments, loads the IMDB dataset, initializes a selected NLP model, evaluates the
-    model's robustness using the dataset, and optionally generates performance plots.
+    Parses command-line arguments, loads the IMDB dataset, initialises a
+    selected NLP model, evaluates the model's robustness using the dataset,
+    and optionally generates performance plots.
 
     Raises NotImplementedError if an unsupported model type is specified.
 
     Arguments:
         --csv (str): Path to the IMDB CSV file. This argument is mandatory.
         Check Readme for Thomas Mortimer's project for generation details
-        --model (str): Model type to use for evaluation. Options include 'dummy' (default) and 'hf'.
+        --model (str): Model type to use for evaluation.
+        Options include 'dummy' (default) and 'hf'.
         --plot: If specified, generates plots for performance metrics.
 
     Returns:

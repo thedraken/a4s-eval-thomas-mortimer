@@ -12,7 +12,8 @@ nlp = stanza.Pipeline('en', processors='tokenize,pos', tokenize_no_ssplit=True)
 
 def _compute_pos_measures(ref_texts: list[str], eval_texts: list[str]) -> list[Measure]:
     """
-    Analyzes part-of-speech (POS) tag consistency between reference and evaluated text sets and computes
+    Analyses part-of-speech (POS) tag consistency between reference and
+    evaluated text sets and computes
     accuracy measures for nouns, adjectives, and overall POS stability.
 
     This function takes two lists: one containing reference texts and another containing
@@ -49,8 +50,8 @@ def _compute_pos_measures(ref_texts: list[str], eval_texts: list[str]) -> list[M
         orig_pos = [w.xpos for sent in orig_doc.sentences for w in sent.words]
         trans_pos = [w.xpos for sent in trans_doc.sentences for w in sent.words]
 
-        L = min(len(orig_pos), len(trans_pos))
-        for p1, p2 in zip(orig_pos[:L], trans_pos[:L]):
+        min_length = min(len(orig_pos), len(trans_pos))
+        for p1, p2 in zip(orig_pos[:min_length], trans_pos[:min_length]):
             if p1.startswith("NN"):  # nouns
                 noun_correct.append(int(p2.startswith("NN")))
             if p1.startswith("JJ"):  # adjectives
@@ -161,9 +162,9 @@ def noun_adj_transformation_accuracy(
             eval_pos = [w.pos for w in eval_sent.words]
 
             # Align only to the shared token length
-            L = min(len(ref_pos), len(eval_pos))
-            ref_pos = ref_pos[:L]
-            eval_pos = eval_pos[:L]
+            min_length = min(len(ref_pos), len(eval_pos))
+            ref_pos = ref_pos[:min_length]
+            eval_pos = eval_pos[:min_length]
 
             # Count noun matches
             for rp, ep in zip(ref_pos, eval_pos):
