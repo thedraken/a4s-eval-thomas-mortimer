@@ -1,4 +1,3 @@
-"""
 import uuid
 
 import pandas as pd
@@ -107,4 +106,3 @@ def test_data_metric_registry_contains_evaluator(
     )
     save_measures(evaluator_function[0], measures)
     assert len(measures) > 0
-"""
