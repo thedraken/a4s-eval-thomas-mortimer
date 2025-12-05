@@ -56,7 +56,7 @@ def plot_consistency(measures: list[Measure]):
     plt.show()
 
 
-def plot_pos_accuracy(measures: List[Measure]):
+def plot_pos_accuracy(measures: list[Measure]):
     scores = [m.score for m in measures]
     labels = [m.name for m in measures]
 
@@ -67,7 +67,7 @@ def plot_pos_accuracy(measures: List[Measure]):
     plt.title("POS Transformation Accuracy")
     plt.show()
 
-def print_measure_list(name, measures):
+def print_measure_list(name: str, measures: list[Measure | str]):
     """
     Prints a formatted list of measures with associated scores.
 
