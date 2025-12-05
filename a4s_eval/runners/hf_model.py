@@ -9,9 +9,9 @@ class HFClassifier:
     """
 
     def __init__(
-            self,
-            model_name="distilbert-base-uncased-finetuned-sst-2-english",
-            batch_size=16,
+        self,
+        model_name="distilbert-base-uncased-finetuned-sst-2-english",
+        batch_size=16,
     ):
         # If possible, use GPU, otherwise fallback to CPU
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,7 +32,7 @@ class HFClassifier:
 
         with torch.no_grad():
             for i in range(0, len(texts), self.batch_size):
-                batch = texts[i: i + self.batch_size]
+                batch = texts[i : i + self.batch_size]
 
                 enc = self.tokenizer(
                     batch,

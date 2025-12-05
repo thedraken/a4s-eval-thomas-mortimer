@@ -5,7 +5,7 @@ from a4s_eval.data_model.measure import Measure
 
 
 def safe_text_metric(
-        metric_name: str, orig_texts: list, transformed_texts: list, compute_score_fn
+    metric_name: str, orig_texts: list, transformed_texts: list, compute_score_fn
 ) -> List[Measure]:
     """
     Generic safe wrapper for text metrics.

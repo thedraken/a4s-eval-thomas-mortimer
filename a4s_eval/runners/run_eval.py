@@ -56,8 +56,8 @@ def plot_consistency(measures: list[Measure]):
         m.score
         for m in measures
         if m.name.startswith("mean")
-           or m.name.startswith("min")
-           or m.name.startswith("max")
+        or m.name.startswith("min")
+        or m.name.startswith("max")
     ]
     labels = [m.name for m in measures]
 

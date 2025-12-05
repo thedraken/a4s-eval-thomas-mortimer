@@ -39,7 +39,7 @@ def plot_transformation_accuracy(scores: dict, out_dir: str | Path):
 
 
 def plot_robustness_consistency(
-        robustness: float, consistency: float, out_dir: str | Path
+    robustness: float, consistency: float, out_dir: str | Path
 ):
     """
     Generates a bar plot for robustness and consistency scores, saves it as an image

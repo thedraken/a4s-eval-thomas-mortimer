@@ -116,7 +116,7 @@ def text_datashape():
 
 @patch("a4s_eval.metrics.data_metrics.nlp_pos_metrics.nlp")
 def test_mixed_accuracy(
-        mock_nlp, text_datashape, reference_dataset_basic, evaluated_dataset_mixed
+    mock_nlp, text_datashape, reference_dataset_basic, evaluated_dataset_mixed
 ):
     """
     Tests the accuracy of noun and adjective transformations in a mixed

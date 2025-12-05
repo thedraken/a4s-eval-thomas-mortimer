@@ -3,9 +3,20 @@ import uuid
 import pandas as pd
 import pytest
 
-from a4s_eval.data_model.evaluation import (DataShape, Dataset, Feature, FeatureType, Model, ModelConfig,
-                                            ModelFramework, ModelTask)
-from a4s_eval.metric_registries.textgen_metric_registry import TextgenMetric, textgen_metric_registry
+from a4s_eval.data_model.evaluation import (
+    DataShape,
+    Dataset,
+    Feature,
+    FeatureType,
+    Model,
+    ModelConfig,
+    ModelFramework,
+    ModelTask,
+)
+from a4s_eval.metric_registries.textgen_metric_registry import (
+    TextgenMetric,
+    textgen_metric_registry,
+)
 from a4s_eval.service.functional_model import TextGenerationModel
 from a4s_eval.service.model_factory import load_model
 from tests.save_measures_utils import save_measures

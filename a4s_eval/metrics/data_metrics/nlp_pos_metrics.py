@@ -123,8 +123,8 @@ def noun_adj_transformation_accuracy(
             f.name
             for f in datashape.features
             if f.feature_type == FeatureType.TEXT
-               and f.name in reference.data.columns
-               and "original" in f.name
+            and f.name in reference.data.columns
+            and "original" in f.name
         ),
         None,
     )
@@ -133,8 +133,8 @@ def noun_adj_transformation_accuracy(
             f.name
             for f in datashape.features
             if f.feature_type == FeatureType.TEXT
-               and f.name in evaluated.data.columns
-               and "transformed" in f.name
+            and f.name in evaluated.data.columns
+            and "transformed" in f.name
         ),
         None,
     )
