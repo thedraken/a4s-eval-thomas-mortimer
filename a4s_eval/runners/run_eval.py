@@ -44,7 +44,7 @@ def plot_performance_drop(measures: list[Measure]):
     plt.show()
 
 
-def plot_consistency(measures: List[Measure]):
+def plot_consistency(measures: list[Measure]):
     similarities = [m.score for m in measures if m.name.startswith("mean") or m.name.startswith("min") or m.name.startswith("max")]
     labels = [m.name for m in measures]
 
